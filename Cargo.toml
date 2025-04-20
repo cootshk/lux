@@ -1,6 +1,6 @@
 [workspace]
 members = ["lux-lib", "lux-cli", "lux-workspace-hack", "xtask", "lux-lua"]
-default-members = ["lux-cli", "lux-lib"]
+default-members = ["lux-cli", "lux-lib", "lux-workspace-hack"]
 resolver = "2"
 
 [profile.release]

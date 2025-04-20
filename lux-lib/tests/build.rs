@@ -1,3 +1,5 @@
+mod lua;
+
 use std::path::PathBuf;
 
 use assert_fs::prelude::PathCopy;
