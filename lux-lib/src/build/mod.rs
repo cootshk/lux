@@ -32,6 +32,7 @@ use ssri::Integrity;
 use thiserror::Error;
 use treesitter_parser::TreesitterBuildError;
 use utils::{recursive_copy_dir, InstallBinaryError};
+use walkdir::WalkDir;
 
 mod builtin;
 mod cmake;
@@ -224,6 +225,34 @@ async fn run_build<R: Rockspec + HasIntegrity>(
             }
             Some(BuildBackendSpec::LuaRock(_)) => {
                 luarocks::build(rockspec, output_paths, lua, config, build_dir, progress).await?
+            }
+            Some(BuildBackendSpec::CopyEverything) => {
+                let mut src_dir = build_dir.join("src");
+                if !src_dir.is_dir() {
+                    src_dir = build_dir.join("lua");
+                }
+                recursive_copy_dir(&src_dir, &output_paths.src)?;
+                recursive_copy_doc_dir(output_paths, build_dir)?;
+                for dir in WalkDir::new(build_dir).into_iter().filter_map(|file| {
+                    file.ok().and_then(|file| {
+                        let path = file.into_path();
+                        if path.is_dir()
+                            && path.file_name().is_some_and(|name| {
+                                !matches!(
+                                    name.to_string_lossy().to_string().as_str(),
+                                    "lua" | "src" | "doc" | "docs"
+                                )
+                            })
+                        {
+                            Some(path)
+                        } else {
+                            None
+                        }
+                    })
+                }) {
+                    recursive_copy_dir(&dir, &output_paths.etc)?;
+                }
+                BuildInfo::default()
             }
             None => BuildInfo::default(),
         },

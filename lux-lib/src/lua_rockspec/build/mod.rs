@@ -262,6 +262,11 @@ pub enum BuildBackendSpec {
     LuaRock(String),
     RustMlua(RustMluaBuildSpec),
     TreesitterParser(TreesitterParserBuildSpec),
+    /// Just copy everything, without building
+    /// This is currently unimplemented by luarocks, but we don't ever publish rockspecs
+    /// that implement this.
+    /// It could be implemented as a custom build backend.
+    CopyEverything,
 }
 
 impl IntoLua for BuildBackendSpec {
@@ -274,6 +279,7 @@ impl IntoLua for BuildBackendSpec {
             BuildBackendSpec::LuaRock(s) => s.into_lua(lua),
             BuildBackendSpec::RustMlua(spec) => spec.into_lua(lua),
             BuildBackendSpec::TreesitterParser(spec) => spec.into_lua(lua),
+            BuildBackendSpec::CopyEverything => "copy_everything".into_lua(lua),
         }
     }
 }
